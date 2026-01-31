@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Lookup | Umar Shahzad</title>
+</head>
+<body>
+
+<main>
+    <h1>GitHub User Lookup</h1>
+
+    <input 
+        type="text" 
+        id="usernameInput" 
+        placeholder="Enter GitHub username"
+    >
+    <button id="searchBtn">Search</button>
+
+    <p id="message"></p>
+
+    <section id="profile" hidden>
+        <h2>Profile</h2>
+        <img id="avatar" alt="Profile image">
+        <p id="name"></p>
+        <p id="bio"></p>
+        <p id="followers"></p>
+    </section>
+
+    <section id="repos" hidden>
+        <h2>Top Repositories</h2>
+        <ul id="repoList"></ul>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
