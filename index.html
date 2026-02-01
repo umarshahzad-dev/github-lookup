@@ -4,38 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Lookup | Umar Shahzad</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center">
+<body>
 
-<main class="w-full max-w-xl bg-gray-800 p-6 rounded-lg shadow-lg">
-    <h1 class="text-2xl font-bold text-center mb-4">GitHub User Lookup</h1>
+<main>
+    <h1>GitHub User Lookup</h1>
 
-    <section class="flex gap-2 mb-4">
+    <section class="search-section">
         <input 
-        type="text" 
-        id="usernameInput" 
-        placeholder="Enter GitHub username"
-        class="flex-1 px-3 py-2 rounded bg-gray-700 text-white focus:outline-none"
-    >
-    <button id="searchBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded font-semibold">Search</button>
+            type="text" 
+            id="usernameInput" 
+            placeholder="Enter GitHub username"
+        >
+        <button id="searchBtn">Search</button>
     </section>
-    
 
-    <p id="message" class="text-center text-sm text-gray-400 mb-4"></p>
+    <p id="message"></p>
 
-    <section id="profile" hidden class="text-center mb-6">
+    <section id="profile" hidden>
         <h2>Profile</h2>
-        <img id="avatar" class="w-24 h-24 rounded-full mx-auto mb-3" alt="Profile image">
-        <p id="name" class="font-semibold"></p>
-      <p id="bio" class="text-sm text-gray-400"></p>
-      <p id="followers" class="text-sm mt-1"></p>
+        <img id="avatar" alt="Profile image">
+        <p id="name"></p>
+        <p id="bio"></p>
+        <p id="followers"></p>
     </section>
 
     <section id="repos" hidden>
-        <h2 class="text-lg font-semibold mb-2">Top Repositories</h2>
-        <ul id="repoList" class="space-y-2"></ul>
+        <h2>Top Repositories</h2>
+        <ul id="repoList"></ul>
     </section>
 </main>
 
