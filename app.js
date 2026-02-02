@@ -1,80 +1,90 @@
-const usernameInput = document.getElementById("usernameInput");
-const searchBtn = document.getElementById("searchBtn");
-const message = document.getElementById("message");
-const avatar = document.getElementById("avatar");
-const name = document.getElementById("name");
-const bio = document.getElementById("bio");
-const followers = document.getElementById("followers");
-const profileSection = document.getElementById("profile");
-const reposSection = document.getElementById("repos");
-const repoList = document.getElementById("repoList");
+import { fetchUser, fetchTopRepos } from "./api.js";
+
+function getUIElements() {
+    return {
+        usernameInput: document.getElementById("usernameInput"),
+        searchBtn: document.getElementById("searchBtn"),
+        message: document.getElementById("message"),
+        avatar: document.getElementById("avatar"),
+        name: document.getElementById("name"),
+        bio: document.getElementById("bio"),
+        followers: document.getElementById("followers"),
+        profileSection: document.getElementById("profile"),
+        reposSection: document.getElementById("repos"),
+        repoList: document.getElementById("repoList"),
+    };
+}
 
 
-searchBtn.addEventListener("click", getUserProfile);
+const ui = getUIElements();
 
-async function getUserProfile() {
-    const username = usernameInput.value.trim();
 
-    if (!username)
-    {
-        message.textContent = "Please enter a Github username";
+
+async function renderUser(username) {
+    try {
+        const userData = await fetchUser(username);
+
+        ui.avatar.src = userData.avatar_url;
+        ui.avatar.alt = `${username}'s avatar`;
+        ui.name.textContent = userData.name || username;
+        ui.bio.textContent = userData.bio || "No bio available";
+        ui.followers.textContent = `Followers: ${userData.followers}`;
+
+        ui.profileSection.hidden = false;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+async function renderRepos(username) {
+    ui.repoList.innerHTML = "";
+
+    const repoData = await fetchTopRepos(username);
+
+    repoData.forEach(repo => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        const span = document.createElement("span");
+
+        a.href = repo.html_url;
+        a.textContent = repo.name;
+        a.target = "_blank";
+
+        span.textContent = ` ⭐ ${repo.stargazers_count}`;
+
+        li.appendChild(a);
+        li.appendChild(span);
+        ui.repoList.appendChild(li);
+    });
+
+    ui.reposSection.hidden = false;
+}
+
+
+async function handleSearch() {
+    const username = ui.usernameInput.value.trim();
+
+    if (!username) {
+        ui.message.textContent = "Please enter a GitHub username";
         return;
     }
 
-    message.textContent = "Loading..."
+    ui.message.textContent = "Loading...";
+    ui.profileSection.hidden = true;
+    ui.reposSection.hidden = true;
+
     try {
-        const userResponse = await fetch(`https://api.github.com/users/${username}`);
-
-        if (!userResponse.ok)
-        {
-            throw new Error("User not found");
-        }
-
-        const userData = await userResponse.json();
-
-        message.textContent = "";
-        console.log(userData);
-
-        avatar.src = userData.avatar_url;
-        avatar.alt = `${username}'s avatar`;
-        name.textContent = userData.name || username;
-        bio.textContent = userData.bio || "No bio available";
-        followers.textContent = `Followers: ${userData.followers}`;
-
-        profileSection.hidden = false;
-
-        const reposResponse = await fetch(
-        `https://api.github.com/search/repositories?q=user:${username}&sort=stars&order=desc&per_page=5`
-        );
-
-        const reposData = await reposResponse.json();
-        const topRepos = reposData.items;
-
-        repoList.innerHTML = "";
-
-        topRepos.forEach(repo => {
-            const listItem = document.createElement("li");
-            const link = document.createElement("a");
-            const span = document.createElement("span");
-            
-            link.href = repo.html_url;
-            link.textContent = repo.name;
-            link.target = "_blank";
-            link.className = "text-blue-400 hover:underline";
-            
-            span.textContent = ` ⭐ ${repo.stargazers_count}`;
-            span.className = "text-sm text-gray-400 ml-2";
-            
-            listItem.appendChild(link);
-            listItem.appendChild(span);
-            repoList.appendChild(listItem);
-        });
-        
-        reposSection.hidden = false;
-
+        await renderUser(username);
+        await renderRepos(username);
+        ui.message.textContent = "";
     } catch (error) {
-        message.textContent = `Error: ${error.message}`;
-        profileSection.hidden = true;
-        reposSection.hidden = true;
+        ui.message.textContent = `Error: ${error.message}`;
     }
 }
+
+function initialize() {
+    ui.searchBtn.addEventListener("click", handleSearch);
+}
+
+initialize();
