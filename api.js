@@ -1,3 +1,5 @@
+import { CONFIG } from "./config.js";
+
 export async function fetchUser(username) {
     const response = await fetch(`${CONFIG.BASE_URL}/${username}`);
     return handleResponse(response);
@@ -13,10 +15,16 @@ export async function fetchTopRepos(username) {
 
 async function handleResponse(response) {
     if (!response.ok) {
-        const errorData = await response.json();
+
+        let errorData = {};
+        try {
+            errorData = await response.json();
+        } catch {
+            errorData.message = "Unexpected server response";
+        }
 
         if (response.status === 404) {
-            throw new Error("Resource not found");
+            throw new Error("User not found");
         }
 
         if (response.status === 403) {

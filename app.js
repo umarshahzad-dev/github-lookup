@@ -7,84 +7,110 @@ function getUIElements() {
         message: document.getElementById("message"),
         avatar: document.getElementById("avatar"),
         name: document.getElementById("name"),
+        username: document.getElementById("username"),
         bio: document.getElementById("bio"),
         followers: document.getElementById("followers"),
+        following: document.getElementById("following"),
+        repoCount: document.getElementById("repoCount"),
+        profileLink: document.getElementById("profileLink"),
         profileSection: document.getElementById("profile"),
         reposSection: document.getElementById("repos"),
         repoList: document.getElementById("repoList"),
     };
 }
 
-
 const ui = getUIElements();
 
-
-
-async function renderUser(username) {
-    try {
-        const userData = await fetchUser(username);
-
-        ui.avatar.src = userData.avatar_url;
-        ui.avatar.alt = `${username}'s avatar`;
-        ui.name.textContent = userData.name || username;
-        ui.bio.textContent = userData.bio || "No bio available";
-        ui.followers.textContent = `Followers: ${userData.followers}`;
-
-        ui.profileSection.hidden = false;
-    } catch (error) {
-        throw error;
-    }
+function showMessage(text, type) {
+    ui.message.textContent = text;
+    ui.message.className = `status ${type}`;
+    ui.message.hidden = false;
 }
 
+function hideMessage() {
+    ui.message.hidden = true;
+    ui.message.className = "status";
+}
 
-async function renderRepos(username) {
+function renderUserData(userData, username) {
+    ui.avatar.src = userData.avatar_url;
+    ui.avatar.alt = `${username}'s avatar`;
+    ui.name.textContent = userData.name || username;
+    ui.username.textContent = `@${userData.login}`
+    ui.bio.textContent = userData.bio || "No bio available";
+    ui.followers.textContent = userData.followers.toLocaleString();
+    ui.following.textContent = userData.following.toLocaleString();
+    ui.repoCount.textContent = userData.public_repos.toLocaleString();
+    ui.profileLink.href = userData.html_url;
+
+    ui.profileSection.hidden = false;
+}
+
+function renderRepoData(repoData) {
     ui.repoList.innerHTML = "";
-
-    const repoData = await fetchTopRepos(username);
 
     repoData.forEach(repo => {
         const li = document.createElement("li");
         const a = document.createElement("a");
-        const span = document.createElement("span");
+        const nameSpan = document.createElement("span");
+        const starSpan = document.createElement("span");
 
         a.href = repo.html_url;
-        a.textContent = repo.name;
         a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.classList.add("repo-card");
 
-        span.textContent = ` ⭐ ${repo.stargazers_count}`;
+        nameSpan.textContent = repo.name;
+        starSpan.textContent = `⭐ ${repo.stargazers_count.toLocaleString()}`;
 
+        a.appendChild(nameSpan);
+        a.appendChild(starSpan);
         li.appendChild(a);
-        li.appendChild(span);
         ui.repoList.appendChild(li);
     });
 
     ui.reposSection.hidden = false;
 }
 
-
 async function handleSearch() {
     const username = ui.usernameInput.value.trim();
 
     if (!username) {
-        ui.message.textContent = "Please enter a GitHub username";
+        showMessage("Please enter a GitHub username", "error");
         return;
     }
 
-    ui.message.textContent = "Loading...";
+    showMessage("Fetching profile...", "loading");
+
     ui.profileSection.hidden = true;
     ui.reposSection.hidden = true;
+    ui.searchBtn.disabled = true;
 
     try {
-        await renderUser(username);
-        await renderRepos(username);
-        ui.message.textContent = "";
+        const [userData, repoData] = await Promise.all([
+            fetchUser(username),
+            fetchTopRepos(username)
+        ]);
+
+        renderUserData(userData, username);
+        renderRepoData(repoData);
+        hideMessage();
+
     } catch (error) {
-        ui.message.textContent = `Error: ${error.message}`;
+        showMessage(error.message, "error");
+    } finally {
+        ui.searchBtn.disabled = false;
     }
 }
 
 function initialize() {
     ui.searchBtn.addEventListener("click", handleSearch);
+
+    ui.usernameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            handleSearch();
+        }
+    });
 }
 
 initialize();
